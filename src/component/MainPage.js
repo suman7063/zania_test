@@ -1,68 +1,64 @@
-import React, { useState, useEffect } from 'react';
-import Draggable from 'react-draggable';
-import './mainPage.css';
+import React, { FC, useCallback, useEffect, useState } from 'react';
+import update from 'immutability-helper';
+import { Card } from './Card';
+
+const style = {
+  width: 600,
+  display: 'grid',
+  gridTemplateColumns: 'repeat(3, 1fr)',
+  gap: '10px',
+};
+
 
 const MainPage = () => {
-  const [documents, setDocuments] = useState([]);
-  const [newDocument, setNewDocument] = useState({ type: '', title: '', position: documents.length });
-
+  const [cards, setCards] = useState([]);
+  const [newDocument, setNewDocument] = useState({ type: '', title: '', position: cards.length });
   useEffect(() => {
-    // Fetch initial data from the mocked API
     fetch('/api/documents')
       .then((response) => response.json())
-      .then((data) => setDocuments(data));
+      .then((data) => setCards(data));
   }, []);
 
-  console.log(documents,"documents")
-  // Add a new document
   const addDocument = () => {
-    const newPosition = documents.length;
+    const newPosition = cards.length;
     const updatedDocument = { ...newDocument, position: newPosition };
-
+  
     fetch('/api/documents', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updatedDocument),
     })
       .then((response) => response.json())
-      .then((data) => setDocuments([...documents, data]));
+      .then((data) => setCards([...cards, data]));
   };
+  const moveCard = useCallback((dragIndex, hoverIndex) => {
+    setCards((prevCards) =>
+      update(prevCards, {
+        $splice: [
+          [dragIndex, 1],
+          [hoverIndex, 0, prevCards[dragIndex]],
+        ],
+      })
+    );
+  }, []);
 
-  // Update documents in the server and local state
-  const updateDocuments = (updatedDocs) => {
-    fetch('/api/documents', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updatedDocs),
-    })
-      .then((response) => response.json())
-      .then((data) => setDocuments(data));
-  };
-
-  const handleStop = (e, data, index) => {
-    const updatedDocuments = [...documents];
-    const movedDoc = updatedDocuments[index];
-  
-    // Calculate new position based on the drag event
-    const newPosition = Math.max(Math.round(data.x / 100), 0); // Ensure the position is at least 0
-  
-    // Update the document's position
-    movedDoc.position = newPosition;
-  
-    // Sort documents by the new positions
-    updatedDocuments.sort((a, b) => a.position - b.position);
-  
-    // Update the documents in the state and server
-    setDocuments(updatedDocuments);
-    updateDocuments(updatedDocuments);
-  };
-  
+  const renderCard = useCallback(
+    (card, index) => {
+      return (
+        <Card
+          key={card.position}
+          index={index}
+          id={card.type}
+          text={card.title}
+          moveCard={moveCard}
+        />
+      );
+    },
+    [moveCard]
+  );
 
   return (
-    <div className="main-container">
-      <p>Document Management</p>
-
-      {/* Input fields to add a new document */}
+    <div>
       <div className="document-form">
         <input
           type="text"
@@ -78,28 +74,12 @@ const MainPage = () => {
         />
         <button onClick={addDocument}>Add Document</button>
       </div>
-
-      {/* Container for draggable cards */}
-      <div className="document-grid" id="draggable-boundary">
-        {documents.map((doc, index) => (
-          <Draggable
-            key={doc.type} // Make sure each draggable has a unique key
-            bounds="parent" // Restrict drag within the parent container
-            defaultPosition={{ x: doc.position * 100, y: 0 }} // Position based on the document's position
-            onStop={(e, data) => handleStop(e, data, index)} // Handle position update on drag stop
-          >
-            <div className="card">
-              <div className="handle">Drag from here</div>
-              <div className="card-content">
-                <h3>{doc.title}</h3>
-                <p>Type: {doc.type}</p>
-              </div>
-            </div>
-          </Draggable>
-        ))}
-      </div>
+    <div style={style}>
+         
+      {cards.map((card, i) => renderCard(card, i))}
     </div>
-  );
+    </div>
+  )
 };
 
-export default MainPage;
+export default MainPage
