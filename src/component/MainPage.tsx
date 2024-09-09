@@ -1,49 +1,60 @@
 import React, { FC, useCallback, useEffect, useState } from 'react';
-import update from 'immutability-helper';
 import { Card } from './Card';
+import  './mainPage.css'
+// Define the type for documents
+interface Document {
+  type: string;
+  title: string;
+  position: number;
+}
 
-const style = {
-  width: 600,
-  display: 'grid',
-  gridTemplateColumns: 'repeat(3, 1fr)',
-  gap: '10px',
-};
+// Define the styles
 
 
-const MainPage = () => {
-  const [cards, setCards] = useState([]);
-  const [newDocument, setNewDocument] = useState({ type: '', title: '', position: cards.length });
+const MainPage: FC = () => {
+  // State for the list of cards and the new document form
+  const [cards, setCards] = useState<Document[]>([]);
+  const [newDocument, setNewDocument] = useState<Document>({ type: '', title: '', position: 0 });
+
+  // Fetch the documents from the API on component mount
   useEffect(() => {
     fetch('/api/documents')
       .then((response) => response.json())
-      .then((data) => setCards(data));
+      .then((data: Document[]) => setCards(data));
   }, []);
 
+  // Function to handle adding a new document
   const addDocument = () => {
     const newPosition = cards.length;
     const updatedDocument = { ...newDocument, position: newPosition };
-  
+
     fetch('/api/documents', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updatedDocument),
     })
       .then((response) => response.json())
-      .then((data) => setCards([...cards, data]));
+      .then((data: Document) => setCards([...cards, data]));
   };
-  const moveCard = useCallback((dragIndex, hoverIndex) => {
-    setCards((prevCards) =>
-      update(prevCards, {
-        $splice: [
-          [dragIndex, 1],
-          [hoverIndex, 0, prevCards[dragIndex]],
-        ],
-      })
-    );
-  }, []);
 
+  // Function to handle moving a card
+  const moveCard = useCallback((dragIndex: number, hoverIndex: number) => {
+    setCards((prevCards) => {
+      // Clone the array to avoid mutating state directly
+      const updatedCards = [...prevCards];
+  
+      // Remove the dragged card
+      const [draggedCard] = updatedCards.splice(dragIndex, 1);
+  
+      // Insert the dragged card into the new position
+      updatedCards.splice(hoverIndex, 0, draggedCard);
+  
+      return updatedCards;
+    });
+  }, []);
+  // Render a card with the proper props
   const renderCard = useCallback(
-    (card, index) => {
+    (card: Document, index: number) => {
       return (
         <Card
           key={card.position}
@@ -74,12 +85,11 @@ const MainPage = () => {
         />
         <button onClick={addDocument}>Add Document</button>
       </div>
-    <div style={style}>
-         
-      {cards.map((card, i) => renderCard(card, i))}
+      <div className='card-container'>
+        {cards.map((card, i) => renderCard(card, i))}
+      </div>
     </div>
-    </div>
-  )
+  );
 };
 
-export default MainPage
+export default MainPage;

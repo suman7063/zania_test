@@ -7,7 +7,6 @@ function App() {
     <DndProvider backend={HTML5Backend}>
     <div className="App">
       <MainPage/>
-      emdmfkdlfklk
     </div>
     </DndProvider>
   );

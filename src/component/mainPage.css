@@ -1,39 +1,24 @@
-/* MainPage.css */
-.main-container {
-  max-width: 100%;
-  margin: 20px auto;
-}
 
-.document-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr); /* 3 cards per row */
-  gap: 20px;
-  position: relative; /* Important to position the boundary for dragging */
-  height: 400px; /* Set a fixed height to constrain dragging vertically */
-  border: 2px solid #ccc;
-  padding: 10px;
-  overflow: hidden; /* This will hide anything that overflows outside the grid */
+.document-form{
+  width: 94%;
+  height: 60px;
+  padding: 3%;
+ 
 }
-
-.card {
-  background-color: #f4f4f4;
-  border: 1px solid #ddd;
-  padding: 20px;
-  text-align: center;
-  border-radius: 8px;
-  box-shadow: 2px 2px 12px rgba(0, 0, 0, 0.1);
-  cursor: move;
-  width: 100px; /* Ensure card has a specific width */
-  height: 100px; /* Ensure card has a specific height */
+.document-form > input{
+   width: 30%; 
+   padding: 16px;
+   margin: 8px;
 }
-
-.handle {
-  background-color: #ddd;
-  padding: 10px;
-  margin-bottom: 10px;
-  cursor: grab;
+.document-form > button{
+  padding: 16px;
+  cursor: pointer;
 }
-
-.card-content {
-  font-size: 16px;
+.card-container{
+  width: 94%;
+  margin: 3%;
+  margin: auto;
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap: 20px
 }
