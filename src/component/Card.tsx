@@ -1,20 +1,17 @@
 import React, { useRef, useState, useEffect, FC } from 'react';
 import { useDrag, useDrop, DropTargetMonitor, DragSourceMonitor } from 'react-dnd';
-
-// Define ItemTypes
+import './card.css'
 export const ItemTypes = {
   CARD: 'card',
 };
 
-// Define the types for the Card component props
 interface CardProps {
-  id: any; // Replace `any` with a more specific type if possible
+  id: any;
   text: string;
   index: number;
   moveCard: (dragIndex: number, hoverIndex: number) => void;
 }
 
-// Define styles
 const style = {
   border: '1px dashed gray',
   padding: '0.5rem 1rem',
@@ -46,8 +43,6 @@ const overlayStyle = {
 };
 
 const CAT_API_URL = 'https://api.thecatapi.com/v1/images/search?limit=1';
-
-// Define the type for the drop item
 interface DragItem {
   index: number;
 }
@@ -57,8 +52,6 @@ export const Card: FC<CardProps> = ({ id, text, index, moveCard }) => {
   const [imageUrl, setImageUrl] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(true);
   const [overlayVisible, setOverlayVisible] = useState<boolean>(false);
-
-  // Fetch a random image on component mount
   useEffect(() => {
     const fetchImage = async () => {
       try {
@@ -75,7 +68,6 @@ export const Card: FC<CardProps> = ({ id, text, index, moveCard }) => {
     fetchImage();
   }, []);
 
-  // Handle keydown for ESC key to close overlay
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -99,30 +91,16 @@ export const Card: FC<CardProps> = ({ id, text, index, moveCard }) => {
 
       const dragIndex = item.index;
       const hoverIndex = index;
-
-      // Don't replace items with themselves
       if (dragIndex === hoverIndex) {
         return;
       }
-
-      // Determine rectangle on screen
       const hoverBoundingRect = ref.current.getBoundingClientRect();
-
-      // Get vertical middle
       const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
-
-      // Determine mouse position
       const clientOffset = monitor.getClientOffset();
-
-      // Check if clientOffset is null
       if (clientOffset === null) {
         return;
       }
-
-      // Get pixels to the top
       const hoverClientY = clientOffset.y - hoverBoundingRect.top;
-
-      // Only perform the move when the mouse has crossed half of the items height
       if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
         return;
       }
@@ -130,11 +108,7 @@ export const Card: FC<CardProps> = ({ id, text, index, moveCard }) => {
       if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) {
         return;
       }
-
-      // Time to actually perform the action
       moveCard(dragIndex, hoverIndex);
-
-      // Note: we're mutating the monitor item here!
       item.index = hoverIndex;
     },
   });
@@ -162,16 +136,16 @@ export const Card: FC<CardProps> = ({ id, text, index, moveCard }) => {
     <>
       {overlayVisible && (
         <div style={overlayStyle} onClick={handleOverlayClick}>
-          <img src={imageUrl} alt="Full Size Cat" style={{ maxWidth: '90vw', maxHeight: '90vh', objectFit: 'contain' }} />
+          <img src={imageUrl} alt="Full Size Cat" className='overlay-img' />
         </div>
       )}
       <div ref={ref} style={{ ...style, opacity }} data-handler-id={handlerId as string}>
         {loading ? (
-          <div style={{ width: '100%', height: '150px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <div className='loader-container'>
             <div style={loaderStyle} />
           </div>
         ) : (
-          imageUrl && <img src={imageUrl} alt="Random Cat" style={{ width: '100%', height: '150px', objectFit: 'cover', cursor: 'pointer' }} onClick={handleImageClick} />
+          imageUrl && <img src={imageUrl} alt="Random Cat" className='card-img' onClick={handleImageClick} />
         )}
         <p>{text}</p>
       </div>

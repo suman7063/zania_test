@@ -1,29 +1,22 @@
 import React, { FC, useCallback, useEffect, useState } from 'react';
 import { Card } from './Card';
 import  './mainPage.css'
-// Define the type for documents
 interface Document {
   type: string;
   title: string;
   position: number;
 }
 
-// Define the styles
-
-
 const MainPage: FC = () => {
-  // State for the list of cards and the new document form
   const [cards, setCards] = useState<Document[]>([]);
   const [newDocument, setNewDocument] = useState<Document>({ type: '', title: '', position: 0 });
-
-  // Fetch the documents from the API on component mount
   useEffect(() => {
     fetch('/api/documents')
       .then((response) => response.json())
-      .then((data: Document[]) => setCards(data));
+      .then((data: Document[]) => {
+        console.log('initial Data', data)
+        setCards(data)});
   }, []);
-
-  // Function to handle adding a new document
   const addDocument = () => {
     const newPosition = cards.length;
     const updatedDocument = { ...newDocument, position: newPosition };
@@ -34,25 +27,28 @@ const MainPage: FC = () => {
       body: JSON.stringify(updatedDocument),
     })
       .then((response) => response.json())
-      .then((data: Document) => setCards([...cards, data]));
+      .then((data: Document) => {
+        setCards([...cards, data])});
   };
-
-  // Function to handle moving a card
   const moveCard = useCallback((dragIndex: number, hoverIndex: number) => {
     setCards((prevCards) => {
-      // Clone the array to avoid mutating state directly
       const updatedCards = [...prevCards];
-  
-      // Remove the dragged card
       const [draggedCard] = updatedCards.splice(dragIndex, 1);
-  
-      // Insert the dragged card into the new position
       updatedCards.splice(hoverIndex, 0, draggedCard);
+
+      fetch('/api/documents', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedCards),
+      })
+        .then((response) => response.json())
+        .then((data: Document) => {
+          });
   
       return updatedCards;
     });
   }, []);
-  // Render a card with the proper props
+
   const renderCard = useCallback(
     (card: Document, index: number) => {
       return (
@@ -67,7 +63,6 @@ const MainPage: FC = () => {
     },
     [moveCard]
   );
-
   return (
     <div>
       <div className="document-form">
